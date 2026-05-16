@@ -90,7 +90,6 @@ Container Deployment
 | Technology             | Purpose                     |
 | ---------------------- | --------------------------- |
 | Java 17                | Backend Development         |
-| Java 21                | Jenkins Communication       |
 | Spring Boot            | Application Framework       |
 | Maven                  | Build Tool                  |
 | Docker                 | Containerization            |
