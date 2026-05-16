@@ -2,15 +2,30 @@
 
 ## Overview
 
-This project demonstrates a complete CI/CD workflow using �entity["software","Jenkins","CI/CD automation server"] Shared Libraries for multiple Spring Boot services.
+This project demonstrates a complete CI/CD workflow using Jenkins Shared Libraries for multiple Spring Boot microservices.
 
-The main goal of this project is to avoid duplicating Jenkins pipeline code across services by creating a reusable shared pipeline.
+The primary objective of this project is to eliminate duplicated Jenkins pipeline code by creating a reusable shared pipeline that can be consumed by multiple applications.
 
-The same shared library is used to build, package, dockerize, push, and deploy **3 different Spring Boot services**.
+The same shared library is responsible for:
+
+- Cloning repositories
+- Building Maven projects
+- Packaging Spring Boot applications
+- Building Docker images
+- Pushing images to Docker Hub
+- Deploying containers automatically
+
+The shared pipeline is currently used to deploy **3 different Spring Boot services**.
 
 ---
 
-# Architecture
+# Project Architecture Diagram
+
+<img width="1536" height="1024" alt="Architecture Diagram" src="https://github.com/user-attachments/assets/2ca9f567-f9a7-459d-925e-855262abe313" />
+
+---
+
+# Architecture Overview
 
 ```text
                     +--------------------------+
@@ -24,37 +39,66 @@ The same shared library is used to build, package, dockerize, push, and deploy *
 
    Spring Service A        Spring Service B        Spring Service C
     Jenkinsfile             Jenkinsfile             Jenkinsfile
-```
+````
 
-Each service contains only a lightweight `Jenkinsfile` that calls the shared library.
+Each service contains only a lightweight `Jenkinsfile` that calls the reusable shared library.
 
 ---
+
+# CI/CD Workflow
+
+```text
+GitHub Push
+     ↓
+GitHub Webhook
+     ↓
+Jenkins Pipeline
+     ↓
+Maven Build
+     ↓
+Docker Build
+     ↓
+DockerHub Push
+     ↓
+Container Deployment
+```
+
+---
+
 # GitHub Repositories
 
-## Shared Library Repository
-- [https://github.com/abdallanasr/shared-lib](https://github.com/abdallanasr/shared-lib-test)
+## Jenkins Shared Library
+
+* [https://github.com/abdallanasr/shared-lib](https://github.com/abdallanasr/shared-lib)
 
 ## Spring Boot Service A
-- [https://github.com/abdallanasr/spring-petclinic-A](https://github.com/abdallanasr/spring-petclinic-A)
+
+* [https://github.com/abdallanasr/spring-petclinic-A](https://github.com/abdallanasr/spring-petclinic-A)
 
 ## Spring Boot Service B
-- [https://github.com/abdallanasr/spring-petclinic-B](https://github.com/abdallanasr/spring-petclinic-B)
+
+* [https://github.com/abdallanasr/spring-petclinic-B](https://github.com/abdallanasr/spring-petclinic-B)
 
 ## Spring Boot Service C
-- [https://github.com/abdallanasr/spring-petclinic-C](https://github.com/abdallanasr/spring-petclinic-C)
+
+* [https://github.com/abdallanasr/spring-petclinic-C](https://github.com/abdallanasr/spring-petclinic-C)
 
 ---
 
 # Technologies Used
 
-* Java 17
-* Spring Boot
-* Maven
-* Docker
-* Jenkins Shared Library
-* Docker Hub
-* AWS EC2
-* Terraform
+| Technology             | Purpose                     |
+| ---------------------- | --------------------------- |
+| Java 17                | Backend Development         |
+| Java 21                | Jenkins Communication       |
+| Spring Boot            | Application Framework       |
+| Maven                  | Build Tool                  |
+| Docker                 | Containerization            |
+| Jenkins                | CI/CD Automation            |
+| Jenkins Shared Library | Reusable Pipelines          |
+| Docker Hub             | Container Registry          |
+| AWS EC2                | Cloud Infrastructure        |
+| Terraform              | Infrastructure Provisioning |
 
 ---
 
@@ -73,19 +117,34 @@ shared-lib/
 
 # Shared Pipeline Responsibilities
 
-The shared library handles:
+The shared library automates the following tasks:
 
- Cloning source code
+* Clone application source code
+* Build Maven projects
+* Package Spring Boot applications
+* Build Docker images
+* Tag Docker images
+* Push images to Docker Hub
+* Deploy Docker containers automatically
 
- Building Maven projects
+---
 
- Creating Docker images
+# Example Jenkinsfile
 
- Tagging Docker images
+Each application repository contains a minimal Jenkinsfile:
 
- Pushing images to Docker Hub
+```groovy
+@Library('shared-lib-test@main') _
 
- Deploying containers automatically
+buildApp(
+    PORT: '8081',
+    IMAGE_NAME: 'service-a',
+    IMAGE_TAG: 'latest',
+    REPO_NAME: 'abdallanasr/service-a',
+    CONTAINER_NAME: 'service-a-container',
+    REPO_URL: 'https://github.com/abdallanasr/spring-petclinic-A.git'
+)
+```
 
 ---
 
@@ -98,31 +157,31 @@ docker push
 docker run
 ```
 
-
+---
 
 # Infrastructure Provisioning
 
-Terraform provisions:
+Terraform provisions the complete infrastructure automatically:
 
-* Jenkins Master EC2
-* Jenkins Agent EC2
+* Jenkins Master EC2 Instance
+* Jenkins Agent EC2 Instance
 * Security Groups
-* Elastic IPs
+* Elastic IP Addresses
 * 100GB EBS Volumes
 
 ---
 
-#  Jenkins Configuration
+# Jenkins Configuration
 
 ## Required Tools
 
-### Maven
+### Maven Configuration
 
 ```text
 Manage Jenkins → Tools → Maven Installations
 ```
 
-### JDK
+### JDK Configuration
 
 ```text
 Manage Jenkins → Tools → JDK Installations
@@ -134,19 +193,19 @@ Manage Jenkins → Tools → JDK Installations
 
 ## Docker Hub Credentials
 
-Add Docker Hub credentials:
+Docker Hub credentials are configured inside Jenkins:
 
 ```text
 Manage Jenkins → Credentials
 ```
 
-Type:
+### Credential Type
 
 ```text
 Username with password
 ```
 
-Credentials ID:
+### Credentials ID
 
 ```text
 docker-cred
@@ -156,9 +215,9 @@ docker-cred
 
 # Jenkins Agent Configuration
 
-The Jenkins agent connects using SSH.
+The Jenkins agent communicates with the Jenkins master using SSH authentication.
 
-Example remote root directory:
+### Example Remote Root Directory
 
 ```text
 /home/jenkins
@@ -175,3 +234,30 @@ Build Image
 Push Image
 Deploy
 ```
+
+---
+
+# Deployment Features
+
+* Automatic Docker image creation
+* Automatic DockerHub push
+* Automatic container replacement
+* Zero manual deployment steps
+* Reusable shared CI/CD pipeline
+* Multi-service support
+
+---
+
+# Key Learnings
+
+* Building reusable Jenkins Shared Libraries
+* Automating CI/CD pipelines
+* Dockerizing Spring Boot applications
+* Managing Jenkins credentials securely
+* Configuring GitHub webhooks
+* Deploying containers automatically on AWS EC2
+* Infrastructure provisioning using Terraform
+* Jenkins master-agent architecture
+
+---
+
